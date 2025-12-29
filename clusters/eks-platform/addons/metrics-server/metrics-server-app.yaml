@@ -9,10 +9,10 @@ spec:
   project: default
   source:
     repoURL: https://kubernetes-sigs.github.io/metrics-server/
-    targetRevision: 3.12.0  # Pin to specific version for stability
+    targetRevision: 3.11.0  # Using stable version (3.12.0 may have issues)
     chart: metrics-server
     helm:
-      # Inline values (can be moved to values.yaml later if needed)
+      # Inline values
       values: |
         # Run on system nodes
         nodeSelector:
@@ -40,10 +40,6 @@ spec:
           - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
           - --kubelet-use-node-status-port
           - --metric-resolution=15s
-        
-        # Enable TLS
-        tls:
-          enabled: true
         
         # Replicas
         replicas: 1
