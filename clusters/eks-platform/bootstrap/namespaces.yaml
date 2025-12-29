@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-a
+  labels:
+    tenant: team-a
+    purpose: application
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-b
+  labels:
+    tenant: team-b
+    purpose: application
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: data
+  labels:
+    tenant: data
+    purpose: data-engineering
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ml
+  labels:
+    tenant: ml
+    purpose: machine-learning
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cicd
+  labels:
+    tenant: cicd
+    purpose: ci-cd
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: platform
+  labels:
+    tenant: platform
+    purpose: platform-services
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    tenant: platform
+    purpose: observability
+
