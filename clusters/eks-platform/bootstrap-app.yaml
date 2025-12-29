@@ -11,6 +11,8 @@ spec:
     repoURL: https://github.com/RitzLearnsK8s/data-platform-infra.git
     targetRevision: main
     path: clusters/eks-platform/bootstrap
+    # All YAML files are in a single directory (flattened structure)
+    # ArgoCD will scan all .yaml files in this directory
   destination:
     server: https://kubernetes.default.svc
   syncPolicy:
@@ -18,8 +20,8 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=true
-      - PrunePropagationPolicy=foreground
-      - PruneLast=true
+      - CreateNamespace=true    # Essential: Creates namespaces before deploying resources
+      - PruneLast=true          # Good practice: Creates new resources before deleting old ones
+      # PrunePropagationPolicy removed - using default (background) for simpler bootstrap resources
   revisionHistoryLimit: 3
 
