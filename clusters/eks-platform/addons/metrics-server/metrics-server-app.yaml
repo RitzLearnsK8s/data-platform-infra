@@ -34,12 +34,8 @@ spec:
             memory: 200Mi
         
         # Metrics server configuration
-        args:
-          - --cert-dir=/tmp
-          - --secure-port=4443
-          - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
-          - --kubelet-use-node-status-port
-          - --metric-resolution=15s
+        # Note: Using default port 10250 (Helm chart default)
+        # Custom args are optional - chart provides good defaults
         
         # Replicas
         replicas: 1
