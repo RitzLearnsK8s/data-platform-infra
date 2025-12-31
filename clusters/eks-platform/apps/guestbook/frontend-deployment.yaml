@@ -22,7 +22,7 @@ spec:
       - name: php-redis
         image: docker.io/ibmcom/guestbook:v1
         ports:
-        - containerPort: 80
+        - containerPort: 3000
         resources:
           requests:
             cpu: 100m
