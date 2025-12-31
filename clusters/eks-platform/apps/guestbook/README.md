@@ -66,3 +66,4 @@ kubectl delete application guestbook -n argocd
 
 Or delete via ArgoCD UI.
 
+

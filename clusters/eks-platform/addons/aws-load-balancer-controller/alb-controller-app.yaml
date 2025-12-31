@@ -1,0 +1,61 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aws-load-balancer-controller
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://aws.github.io/eks-charts
+    targetRevision: 1.6.2  # Stable version
+    chart: aws-load-balancer-controller
+    helm:
+      # Inline values
+      values: |
+        # Use existing IRSA service account (created by eksctl)
+        serviceAccount:
+          create: false
+          name: aws-load-balancer-controller
+        
+        # Cluster name
+        clusterName: eks-platform
+        
+        # Region
+        region: us-west-2
+        
+        # Run on system nodes
+        nodeSelector:
+          role: system
+        
+        tolerations:
+          - key: "CriticalAddonsOnly"
+            operator: "Equal"
+            value: "true"
+            effect: "NoSchedule"
+        
+        # Resource limits
+        resources:
+          limits:
+            cpu: 200m
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        
+        # Replicas (2 for HA)
+        replicaCount: 2
+      releaseName: aws-load-balancer-controller
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false  # kube-system already exists
+      - PruneLast=true
+  revisionHistoryLimit: 3
+

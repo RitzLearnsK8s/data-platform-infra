@@ -1,0 +1,63 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: karpenter
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: oci://public.ecr.aws/karpenter/karpenter
+    targetRevision: 1.0.0  # Stable version (without 'v' prefix for OCI)
+    chart: karpenter
+    helm:
+      # Inline values
+      values: |
+        # Service account with IRSA
+        serviceAccount:
+          create: true
+          name: karpenter
+          annotations:
+            eks.amazonaws.com/role-arn: arn:aws:iam::189562476119:role/KarpenterControllerRole-eks-platform
+        
+        # Cluster settings
+        settings:
+          clusterName: eks-platform
+          defaultInstanceProfile: KarpenterNodeInstanceProfile-eks-platform
+          interruptionQueue: ""  # Empty string disables interruption handling (optional, only needed for Spot instances)
+        
+        # Run on system nodes
+        nodeSelector:
+          role: system
+        
+        tolerations:
+          - key: "CriticalAddonsOnly"
+            operator: "Equal"
+            value: "true"
+            effect: "NoSchedule"
+        
+        # Resource limits
+        resources:
+          limits:
+            cpu: 1
+            memory: 1Gi
+          requests:
+            cpu: 1
+            memory: 1Gi
+        
+        # Replicas
+        replicas: 1
+      releaseName: karpenter
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: karpenter
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true  # karpenter namespace will be created
+      - PruneLast=true
+  revisionHistoryLimit: 3
+

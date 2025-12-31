@@ -1,0 +1,87 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://charts.jetstack.io
+    targetRevision: v1.13.3  # Stable version
+    chart: cert-manager
+    helm:
+      # Inline values
+      values: |
+        # Install CRDs (required for cert-manager)
+        installCRDs: true
+        
+        # Top-level nodeSelector and tolerations (applies to controller)
+        nodeSelector:
+          role: system
+        
+        tolerations:
+          - key: "CriticalAddonsOnly"
+            operator: "Equal"
+            value: "true"
+            effect: "NoSchedule"
+        
+        # Controller resource limits
+        controller:
+          resources:
+            limits:
+              cpu: 200m
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          # Replicas (2 for HA)
+          replicaCount: 2
+        
+        # Webhook resource limits
+        webhook:
+          nodeSelector:
+            role: system
+          tolerations:
+            - key: "CriticalAddonsOnly"
+              operator: "Equal"
+              value: "true"
+              effect: "NoSchedule"
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
+        
+        # CA Injector resource limits
+        cainjector:
+          nodeSelector:
+            role: system
+          tolerations:
+            - key: "CriticalAddonsOnly"
+              operator: "Equal"
+              value: "true"
+              effect: "NoSchedule"
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
+      releaseName: cert-manager
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true  # cert-manager namespace will be created
+      - PruneLast=true
+  revisionHistoryLimit: 3
+

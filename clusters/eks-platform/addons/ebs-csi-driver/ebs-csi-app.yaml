@@ -1,0 +1,56 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ebs-csi-driver
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://kubernetes-sigs.github.io/aws-ebs-csi-driver
+    targetRevision: 2.23.0  # Stable version
+    chart: aws-ebs-csi-driver
+    helm:
+      # Inline values
+      values: |
+        # Use existing IRSA service account (created by eksctl)
+        controller:
+          serviceAccount:
+            create: false
+            name: ebs-csi-controller-sa
+          
+          # Run on system nodes
+          nodeSelector:
+            role: system
+          
+          tolerations:
+            - key: "CriticalAddonsOnly"
+              operator: "Equal"
+              value: "true"
+              effect: "NoSchedule"
+          
+          # Resource limits
+          resources:
+            limits:
+              cpu: 200m
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          
+          # Replicas (2 for HA)
+          replicaCount: 2
+      releaseName: aws-ebs-csi-driver
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false  # kube-system already exists
+      - PruneLast=true
+  revisionHistoryLimit: 3
+
