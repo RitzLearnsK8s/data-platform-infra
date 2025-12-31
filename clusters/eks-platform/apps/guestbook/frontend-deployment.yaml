@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: team-a
+  labels:
+    app: guestbook
+    tier: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: guestbook
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: guestbook
+        tier: frontend
+    spec:
+      containers:
+      - name: php-redis
+        image: gcr.io/google-samples/gb-frontend:v6
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 200m
+            memory: 200Mi
+        env:
+        - name: GET_HOSTS_FROM
+          value: "dns"
+        - name: REDIS_MASTER_SERVICE_HOST
+          value: "redis-master"
+        - name: REDIS_MASTER_SERVICE_PORT
+          value: "6379"
+        - name: REDIS_SLAVE_SERVICE_HOST
+          value: "redis-replica"
+        - name: REDIS_SLAVE_SERVICE_PORT
+          value: "6379"
+      # Use workload nodes (Karpenter will provision)
+      nodeSelector:
+        workload-tier: workload
+
